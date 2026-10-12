@@ -21,6 +21,14 @@
 
 #include <dxgi1_4.h>
 
+// Dynamic depth bias needs ID3D12GraphicsCommandList9, which the Agility SDK
+// headers and recent Windows SDKs (10.0.26100+) both declare. Whether the
+// runtime supports it is still checked through D3D12_OPTIONS16 at device
+// creation: Windows 11 24H2 and later have it in-box.
+#if defined(PLUME_D3D12_AGILITY_SDK_ENABLED) || defined(__ID3D12GraphicsCommandList9_INTERFACE_DEFINED__)
+#   define PLUME_D3D12_DYNAMIC_DEPTH_BIAS
+#endif
+
 #include "D3D12MemAlloc.h"
 
 namespace plume {
@@ -172,7 +180,7 @@ namespace plume {
         ID3D12GraphicsCommandList *d3d = nullptr;
         ID3D12GraphicsCommandList1 *d3dV1 = nullptr;
         ID3D12GraphicsCommandList4 *d3dV4 = nullptr;
-#   ifdef PLUME_D3D12_AGILITY_SDK_ENABLED
+#   ifdef PLUME_D3D12_DYNAMIC_DEPTH_BIAS
         ID3D12GraphicsCommandList9 *d3dV9 = nullptr;
 #   endif
         ID3D12CommandAllocator *commandAllocator = nullptr;

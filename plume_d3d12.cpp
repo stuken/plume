@@ -1868,7 +1868,7 @@ namespace plume {
         d3d->QueryInterface(IID_PPV_ARGS(&d3dV1));
         d3d->QueryInterface(IID_PPV_ARGS(&d3dV4));
 
-#   ifdef PLUME_D3D12_AGILITY_SDK_ENABLED
+#   ifdef PLUME_D3D12_DYNAMIC_DEPTH_BIAS
         d3d->QueryInterface(IID_PPV_ARGS(&d3dV9));
 #   endif
 
@@ -2248,7 +2248,7 @@ namespace plume {
     }
 
     void D3D12CommandList::setDepthBias(float depthBias, float depthBiasClamp, float slopeScaledDepthBias) {
-#   ifdef PLUME_D3D12_AGILITY_SDK_ENABLED
+#   ifdef PLUME_D3D12_DYNAMIC_DEPTH_BIAS
         assert(d3dV9 != nullptr);
         assert(queue->device->capabilities.dynamicDepthBias && "Dynamic depth bias is unsupported on this device.");
         d3dV9->RSSetDepthBias(depthBias, depthBiasClamp, slopeScaledDepthBias);
@@ -3117,10 +3117,10 @@ namespace plume {
         psoDesc.RasterizerState.SlopeScaledDepthBias = desc.slopeScaledDepthBias;
 
         if (desc.dynamicDepthBiasEnabled) {
-#       ifdef PLUME_D3D12_AGILITY_SDK_ENABLED
+#       ifdef PLUME_D3D12_DYNAMIC_DEPTH_BIAS
             psoDesc.Flags |= D3D12_PIPELINE_STATE_FLAG_DYNAMIC_DEPTH_BIAS;
 #       else
-            assert(false && "Dynamic depth bias is unsupported without the Agility SDK.");
+            assert(false && "Dynamic depth bias is unsupported by these D3D12 headers.");
 #       endif
         }
 
@@ -3750,6 +3750,14 @@ namespace plume {
             if (SUCCEEDED(res)) {
                 dynamicDepthBiasOption = d3d12Options16.DynamicDepthBiasSupported;
                 gpuUploadHeapOption = d3d12Options16.GPUUploadHeapSupported;
+            }
+#       elif defined(PLUME_D3D12_DYNAMIC_DEPTH_BIAS)
+            // Without the Agility SDK only dynamic depth bias is taken from
+            // the in-box runtime.
+            D3D12_FEATURE_DATA_D3D12_OPTIONS16 d3d12Options16 = {};
+            res = deviceOption->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS16, &d3d12Options16, sizeof(d3d12Options16));
+            if (SUCCEEDED(res)) {
+                dynamicDepthBiasOption = d3d12Options16.DynamicDepthBiasSupported;
             }
 #       endif
 
