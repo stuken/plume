@@ -110,6 +110,9 @@ namespace plume {
         uint32_t height = 0;
         uint32_t refreshRate = 0;
         bool vsyncEnabled = true;
+        // Vertical blanks each frame waits for while vsync is on. Above 1 it
+        // holds a frame rate below the refresh rate locked to the display.
+        UINT vsyncInterval = 1;
         UINT swapChainFlags = 0;
 
         D3D12SwapChain(D3D12CommandQueue *commandQueue, const RenderSwapChainDesc &desc);
